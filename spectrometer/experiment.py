@@ -1,84 +1,109 @@
-import os
-import time
+from detector import Detector
+from spectrum import Spectrum, write, load
+from processor import Processor
 
-from spectrometer import Spectrometer
+d = Detector(0)
+p = Processor()
+
+b = d.measure_background(1, 10, kind='background', name='background')
+write(b)
+b.show()
+
+s = d.measure_spectrum(1, 10, kind='background2', name='background2')
+write(s)
+s.show()
+
+s.subtract(b)
+write(s)
+s.show()
+
+p.load('spectrum.npy')
+p.process(10)
+p.write('spectrum.csv')
+p.show()
 
 
-def experiment_from_file(filename):
-    pass
+#import os
+#import time
 
-class Experiment(object):
-    def __init__(self):
-        self.settings = {}
-        self.created = time.localtime()
-        self.settings['created'] = time.asctime(self.created)
-        self.spectra = []
-        self.spectrometer = None
+#from spectrometer import Spectrometer
 
-    def setup(self):
-        self._make_dirs()
-        self._set_file_prefix()
-        self._set_num_frames()
 
-        self.spectrometer = Spectrometer()
+#def experiment_from_file(filename):
+#    pass
 
-        for k, v in self.settings.items():
-            self.write_setting(k, v)
+#class Experiment(object):
+#    def __init__(self):
+#        self.settings = {}
+#        self.created = time.localtime()
+#        self.settings['created'] = time.asctime(self.created)
+#        self.spectra = []
+#        self.spectrometer = None
 
-    def _make_dirs(self):
-        current_dir = os.getcwd()
-        path_created = False
+#    def setup(self):
+#        self._make_dirs()
+#        self._set_file_prefix()
+#        self._set_num_frames()
 
-        while not path_created:
-            name = input('Experiment name: ')
-            path = os.path.join(current_dir, name)
-            if os.path.exists(path):
-                print('Experiment exists on path!\nPlease choose different name.')
-            else:
-                spectra_path = os.path.join(path, 'spectra')
-                os.mkdir(path)
-                os.mkdir(spectra_path)
-                self.name = name
-                self.path = path
-                path_created = True
+#        self.spectrometer = Spectrometer()
 
-        self.settings['path'] = self.path
-        self.settings['name'] = self.name
+#        for k, v in self.settings.items():
+#            self.write_setting(k, v)
 
-    def _set_file_prefix(self):
-        prefix = input('Enter file prefix [{}]:'.format(self.name))
-        if not prefix:
-            self.prefix = self.name
-        else:
-            self.prefix = prefix
+#    def _make_dirs(self):
+#        current_dir = os.getcwd()
+#        path_created = False
 
-        self.settings['prefix'] = self.prefix
+#        while not path_created:
+#            name = input('Experiment name: ')
+#            path = os.path.join(current_dir, name)
+#            if os.path.exists(path):
+#                print('Experiment exists on path!\nPlease choose different name.')
+#            else:
+#                spectra_path = os.path.join(path, 'spectra')
+#                os.mkdir(path)
+#                os.mkdir(spectra_path)
+#                self.name = name
+#                self.path = path
+#                path_created = True
 
-    def _set_num_frames(self):
-        num_frames_set = False
-        num_dropped_frames_set = False
-        while not num_frames_set:
-            num_frames = input('Enter number of frames to collect: ')
-            if isinstance(int(num_frames), int):
-                self.num_frames = num_frames
-                num_frames_set = True
-        while not num_dropped_frames_set:
-            num_dropped_frames = input('Enter number of frames to drop: ')
-            if isinstance(int(num_dropped_frames), int):
-                self.num_dropped_frames = num_dropped_frames
-                num_dropped_frames_set = True
+#        self.settings['path'] = self.path
+#        self.settings['name'] = self.name
 
-        self.settings['num_frames'] = self.num_frames
-        self.settings['num_dropped_frames'] = self.num_dropped_frames
+#    def _set_file_prefix(self):
+#        prefix = input('Enter file prefix [{}]:'.format(self.name))
+#        if not prefix:
+#            self.prefix = self.name
+#        else:
+#            self.prefix = prefix
 
-    def write_setting(self, parameter, value):
-        filename = os.path.join(self.path, 'settings.py')
-        with open(filename, 'a') as outf:
-            outf.write('{} : {}\n'.format(parameter, value))
+#        self.settings['prefix'] = self.prefix
 
-    def run(self):
-        pass
+#    def _set_num_frames(self):
+#        num_frames_set = False
+#        num_dropped_frames_set = False
+#        while not num_frames_set:
+#            num_frames = input('Enter number of frames to collect: ')
+#            if isinstance(int(num_frames), int):
+#                self.num_frames = num_frames
+#                num_frames_set = True
+#        while not num_dropped_frames_set:
+#            num_dropped_frames = input('Enter number of frames to drop: ')
+#            if isinstance(int(num_dropped_frames), int):
+#                self.num_dropped_frames = num_dropped_frames
+#                num_dropped_frames_set = True
 
-if __name__ == '__main__':
-    ex = Experiment()
-    ex.setup()
+#        self.settings['num_frames'] = self.num_frames
+#        self.settings['num_dropped_frames'] = self.num_dropped_frames
+
+#    def write_setting(self, parameter, value):
+#        filename = os.path.join(self.path, 'settings.py')
+#        with open(filename, 'a') as outf:
+#            outf.write('{} : {}\n'.format(parameter, value))
+
+#    def run(self):
+#        pass
+
+#if __name__ == '__main__':
+#    ex = Experiment()
+#    ex.setup()

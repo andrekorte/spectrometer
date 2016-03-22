@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Spectrometer documentation build configuration file, created by
-# sphinx-quickstart on Sun Mar 20 13:27:54 2016.
+# sphinx-quickstart on Sun Mar 20 15:01:58 2016.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -31,11 +31,8 @@ import os
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -289,7 +286,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}

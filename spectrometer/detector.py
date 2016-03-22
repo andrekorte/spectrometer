@@ -53,7 +53,6 @@ class Detector(object):
         background = Spectrum(kind='background', name=name)
         background.add_data(self._measure(num_frames, num_dropped_frames, kind='background', show=show))
         background.num_frames = num_frames
-        background.write(name)
         return background
 
     def measure_spectrum(self, num_frames, num_dropped_frames, **kwargs):
@@ -79,7 +78,6 @@ class Detector(object):
         spectrum = Spectrum(kind='spectrum', name=name)
         spectrum.add_data(self._measure(num_frames, num_dropped_frames, kind='spectrum', show=show))
         spectrum.num_frames = num_frames
-        spectrum.write(name)
         return spectrum
 
     def stream(self):
@@ -122,8 +120,12 @@ class Detector(object):
             cv2.namedWindow(kind)
             cv2.namedWindow('frame')
 
-        data = np.ndarray(shape=(self.height, self.width, 3), dtype=np.int64)
+#        data = np.ndarray(shape=(self.height, self.width, 3), dtype=np.int64)
+#        data = np.ndarray(shape=(self.height, self.width), dtype=np.uint16)
+        data = np.ndarray(shape=(self.height, self.width, 3), dtype=np.float32)
 
+        if not self.cap.isOpened():
+            self.cap.open(0)
         print('\033[1m' + 'Measuring {}'.format(kind) + '\033[0m')
         print('Dropping first {} frames'.format(num_dropped_frames))
         if show is True:
@@ -135,11 +137,11 @@ class Detector(object):
             print('Capturing frame {}\r'.format(i), end='')
             ret, frame = self.cap.read()
             data += frame
+
             if show is True:
                 cv2.imshow('frame', frame)
                 cv2.imshow(kind, data)
 
-            if show is True:
                 k = cv2.waitKey(1) & 0xFF
                 if k == ord('q'):
                     self.cap.release()
@@ -157,9 +159,6 @@ class Detector(object):
 
 if __name__ == '__main__':
     d = Detector()
-    s = Source()
+    #s = Source()
     background = d.measure_background(10, 10, name='backgroundtest')
-    spectrum = d.measure_spectrum(128, 10, name='spectrumtest')
-    picklefile = '.'.join([spectrum.name, 'pk'])
-    spectrum.dump(picklefile)
-    spectrum.load(picklefile)
+    spectrum = d.measure_spectrum(128, 10, name='spectrumtest_gray')

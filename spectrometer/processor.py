@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-At the moment processing only works with jpg images.
 
-TODO: Make processing module work with 64 bit numpy arrays.
+TODO: see comments below
 
 '''
 import cv2
@@ -10,38 +9,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os.path
 import pickle
+import sys
 
 
 class Processor(object):
     def __init__(self):
         pass
 
-    def load_image(self, filename):
-        '''Loads the image file.
-
-        :params filename: The image file
-        :type filename: str
-        :returns: None
-
-        '''
-        assert os.path.isfile(filename)
-
-        self.data = cv2.imread(filename)
-
-    def show_image(self):
-        '''Displays the image data.
-
-        :raises: AssertionError
-
-        '''
-        assert hasattr(self, 'data'), 'No data found.'
-
-        rgb = cv2.cvtColor(self.data, cv2.COLOR_BGR2RGB)
-        plt.imshow(rgb)
-        plt.show()
-
     def load(self, filename):
-        '''Unpickles data from pickle file.
+        '''Loads the spectrum data.
+        
+        Possible input files are pickle files, saved numpy arrays
+        or images files (jpg or png).
 
         :params filename: The pickle filename.
         :type filename: str
@@ -51,8 +30,23 @@ class Processor(object):
         '''
         assert os.path.isfile(filename)
 
-        with open(filename, 'rb') as outf:
-            self.data = pickle.load(outf)
+        name, ext = os.path.splitext(filename)
+        if ext == '.pk':
+            with open(filename, 'rb') as outf:
+                self.data = pickle.load(outf)
+                return
+        elif ext == '.npy':
+            self.data = np.load(filename)
+        elif ext in ['.jpg', '.png']:
+            data = cv2.imread(filename)
+            # TODO
+            # This is just for now and should be removed when you have more data to test
+            if data.shape == (1080, 1920, 3):
+                self.data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+            elif data.shape == (480, 640, 3):
+                self.data = data
+        else:
+            sys.exit('Unknown file format.')
 
     def process(self, threshold):
         '''Calculates the spectrum.
@@ -78,13 +72,17 @@ class Processor(object):
         assert isinstance(threshold, int), 'Threshold must be of type int.'
         assert hasattr(self, 'data'), 'Data not found.'
 
-        roi = self.data[300:500, 1000:]
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        if self.data.shape == (1080, 1920, 3):
+            roi = self.data[300:500, 1000:]
+            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = self.data
+            roi = self.data.shape
         self.spectrum2d = np.where(gray >= threshold, gray, 0)
         self.spectrum1d = np.sum(self.spectrum2d, axis=0)
         self.threshold = threshold
 
-    def show_result(self):
+    def show(self):
         '''Plots the processed spectra.
 
         TODO: Axis labels are not displayed
@@ -154,11 +152,6 @@ class Processor(object):
 
 if __name__ == '__main__':
     p = Processor()
-    p.load_image('spectrum.jpg')
-    #p.show_image()
+    p.load('spectrumtest_gray.npy')
     p.process(10)
-    p.show_result()
-    p.write('test.csv')
-    p.write('test.xy')
-    p.write('test.dat')
-    p.write('test.abc')
+    p.show()
